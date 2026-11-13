@@ -1,0 +1,349 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>個人ライフコンスティチューション作成ツール</title>
+<script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-50 min-h-screen">
+<div class="max-w-2xl mx-auto px-4 py-8">
+  <div class="flex items-center justify-between mb-2">
+    <h1 class="text-2xl font-bold text-gray-800">個人ライフコンスティチューション</h1>
+  </div>
+  <p class="text-gray-500 text-sm mb-6">価値観・原則・目標を構造化し、あなただけの「個人の憲法」を作成します</p>
+
+  <div class="flex border-b border-gray-200 mb-6">
+    <button class="tab-btn px-4 py-2 text-sm font-semibold border-b-2 border-indigo-600 text-indigo-600" data-tab="values" aria-label="価値観タブ">1. 価値観</button>
+    <button class="tab-btn px-4 py-2 text-sm font-semibold border-b-2 border-transparent text-gray-500 hover:text-gray-700" data-tab="principles" aria-label="原則タブ">2. 原則</button>
+    <button class="tab-btn px-4 py-2 text-sm font-semibold border-b-2 border-transparent text-gray-500 hover:text-gray-700" data-tab="goals" aria-label="目標タブ">3. 年次目標</button>
+    <button class="tab-btn px-4 py-2 text-sm font-semibold border-b-2 border-transparent text-gray-500 hover:text-gray-700" data-tab="preview" aria-label="プレビュータブ">4. 完成・出力</button>
+  </div>
+
+  <div id="tab-values">
+    <div class="bg-white rounded-xl shadow p-6 mb-4">
+      <h2 class="font-semibold text-gray-700 mb-1">優先価値 6つ</h2>
+      <p class="text-xs text-gray-400 mb-4">人生で最も大切にしたい価値観を6つ選び、順位をつけてください</p>
+      <div class="space-y-3" id="valuesContainer">
+      </div>
+      <button id="addValueBtn" aria-label="価値観を追加" class="mt-3 text-sm text-indigo-600 hover:text-indigo-700 font-medium">+ 追加（最大6つ）</button>
+    </div>
+    <div class="bg-white rounded-xl shadow p-6">
+      <label for="missionStatement" class="block font-semibold text-gray-700 mb-1">パーソナルミッションステートメント</label>
+      <p class="text-xs text-gray-400 mb-2">「私は〜することで〜に貢献する」の形で記述</p>
+      <textarea id="missionStatement" rows="3" maxlength="300" placeholder="例: 私は誠実さと創造性を持って仕事に取り組み、周囲の人々の可能性を引き出すことで社会に貢献する。" class="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-400 resize-none"></textarea>
+      <div class="text-right text-xs text-gray-400 mt-1"><span id="missionCount">0</span>/300</div>
+    </div>
+  </div>
+
+  <div id="tab-principles" class="hidden">
+    <div class="bg-white rounded-xl shadow p-6">
+      <h2 class="font-semibold text-gray-700 mb-1">譲れない原則 10条</h2>
+      <p class="text-xs text-gray-400 mb-4">どんな状況でも守り続ける行動規範を入力してください</p>
+      <div class="space-y-3" id="principlesContainer"></div>
+      <button id="addPrincipleBtn" aria-label="原則を追加" class="mt-3 text-sm text-indigo-600 hover:text-indigo-700 font-medium">+ 追加（最大10条）</button>
+    </div>
+  </div>
+
+  <div id="tab-goals" class="hidden">
+    <div class="bg-white rounded-xl shadow p-6">
+      <h2 class="font-semibold text-gray-700 mb-1">年次目標 — 価値観への紐付け</h2>
+      <p class="text-xs text-gray-400 mb-4">今年達成したい目標と、それが体現する価値観を紐付けてください</p>
+      <div class="space-y-4" id="goalsContainer"></div>
+      <button id="addGoalBtn" aria-label="目標を追加" class="mt-3 text-sm text-indigo-600 hover:text-indigo-700 font-medium">+ 目標を追加</button>
+    </div>
+  </div>
+
+  <div id="tab-preview" class="hidden">
+    <div class="bg-white rounded-xl shadow p-6 mb-4">
+      <div class="flex items-center justify-between mb-4">
+        <h2 class="font-semibold text-gray-700">あなたの個人憲法</h2>
+        <button id="exportBtn" aria-label="Markdownをエクスポート" class="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white text-sm rounded-lg font-medium transition">Markdown出力</button>
+      </div>
+      <div id="constitutionPreview" class="text-sm text-gray-700 space-y-4"></div>
+    </div>
+    <div id="exportArea" class="hidden bg-gray-900 rounded-xl p-4">
+      <div class="flex items-center justify-between mb-2">
+        <span class="text-xs text-gray-400">Markdown</span>
+        <button id="copyBtn" aria-label="コピー" class="text-xs text-blue-400 hover:text-blue-300">コピー</button>
+      </div>
+      <pre id="exportText" class="text-xs text-green-300 whitespace-pre-wrap overflow-x-auto max-h-80"></pre>
+    </div>
+  </div>
+
+  <div class="flex justify-between mt-6">
+    <button id="prevTabBtn" aria-label="前のタブへ" class="px-5 py-2 bg-gray-100 text-gray-600 rounded-lg text-sm font-medium hover:bg-gray-200 transition hidden">← 戻る</button>
+    <button id="nextTabBtn" aria-label="次のタブへ" class="px-5 py-2 bg-indigo-600 text-white rounded-lg text-sm font-medium hover:bg-indigo-700 transition ml-auto">次へ →</button>
+  </div>
+</div>
+
+<script>
+function escapeHtml(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');}
+
+const KEY = 'app_personal-life-constitution-charter';
+const TABS = ['values', 'principles', 'goals', 'preview'];
+let currentTab = 0;
+
+const DEFAULT_VALUES = ['誠実さ', '創造性', '成長', '健康', '家族', '貢献'];
+const DEFAULT_PRINCIPLES = [
+  '自分に正直であり続ける',
+  '約束は必ず守る',
+  '常に学び続ける',
+  '健康を最優先にする',
+  '人への感謝を忘れない',
+  '',
+  '',
+  '',
+  '',
+  ''
+];
+const VALUE_SUGGESTIONS = ['誠実さ','創造性','成長','健康','家族','貢献','自由','挑戦','愛','知識','冒険','安定','リーダーシップ','独立','ユーモア'];
+
+function loadData() {
+  try { return JSON.parse(localStorage.getItem(KEY)) || {}; } catch(e) { return {}; }
+}
+
+function saveData(d) { localStorage.setItem(KEY, JSON.stringify(d)); }
+
+function getValues() {
+  return [...document.querySelectorAll('.value-input')].map(i => i.value.trim()).filter(v => v);
+}
+
+function getPrinciples() {
+  return [...document.querySelectorAll('.principle-input')].map((i, idx) => ({ no: idx + 1, text: i.value.trim() })).filter(p => p.text);
+}
+
+function getGoals() {
+  const goals = [];
+  document.querySelectorAll('.goal-row').forEach(row => {
+    const text = row.querySelector('.goal-text').value.trim();
+    const val = row.querySelector('.goal-value').value.trim();
+    if (text) goals.push({ text, value: val });
+  });
+  return goals;
+}
+
+function getMission() {
+  return document.getElementById('missionStatement').value.trim();
+}
+
+function initValues() {
+  const container = document.getElementById('valuesContainer');
+  const data = loadData();
+  const vals = data.values || DEFAULT_VALUES;
+  container.innerHTML = '';
+  vals.slice(0, 6).forEach((v, i) => addValueRow(v, i + 1));
+}
+
+function addValueRow(val = '', rank = null) {
+  const container = document.getElementById('valuesContainer');
+  if (container.children.length >= 6) return;
+  const n = container.children.length + 1;
+  const div = document.createElement('div');
+  div.className = 'flex items-center gap-2';
+  div.innerHTML = `<span class="text-sm font-bold text-indigo-400 w-5">${escapeHtml(String(n))}</span>
+    <input type="text" class="value-input flex-1 border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-400" placeholder="例: ${escapeHtml(VALUE_SUGGESTIONS[n - 1] || '価値観')}" maxlength="30" aria-label="${escapeHtml(String(n))}番目の価値観">
+    <button class="del-value-btn text-gray-300 hover:text-red-400 text-lg leading-none" aria-label="削除">×</button>`;
+  div.querySelector('.value-input').value = escapeHtml(val).replace(/&amp;/g,'&').replace(/&lt;/g,'<').replace(/&gt;/g,'>').replace(/&quot;/g,'"').replace(/&#39;/g,"'");
+  div.querySelector('.del-value-btn').addEventListener('click', function() {
+    div.remove();
+    renumberValues();
+  });
+  container.appendChild(div);
+}
+
+function renumberValues() {
+  document.querySelectorAll('#valuesContainer > div').forEach((div, i) => {
+    const span = div.querySelector('span');
+    if (span) span.textContent = String(i + 1);
+  });
+}
+
+function initPrinciples() {
+  const container = document.getElementById('principlesContainer');
+  const data = loadData();
+  const prs = data.principles || DEFAULT_PRINCIPLES;
+  container.innerHTML = '';
+  prs.slice(0, 10).forEach((p, i) => addPrincipleRow(typeof p === 'string' ? p : p.text, i + 1));
+  if (container.children.length === 0) {
+    for (let i = 0; i < 3; i++) addPrincipleRow('', i + 1);
+  }
+}
+
+function addPrincipleRow(text = '', no = null) {
+  const container = document.getElementById('principlesContainer');
+  if (container.children.length >= 10) return;
+  const n = container.children.length + 1;
+  const div = document.createElement('div');
+  div.className = 'flex items-center gap-2';
+  div.innerHTML = `<span class="text-sm font-bold text-gray-400 w-6">第${escapeHtml(String(n))}条</span>
+    <input type="text" class="principle-input flex-1 border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-400" placeholder="例: 誠実さを最優先する" maxlength="100" aria-label="第${escapeHtml(String(n))}条">
+    <button class="del-principle-btn text-gray-300 hover:text-red-400 text-lg leading-none" aria-label="削除">×</button>`;
+  div.querySelector('.principle-input').value = text;
+  div.querySelector('.del-principle-btn').addEventListener('click', function() {
+    div.remove();
+    renumberPrinciples();
+  });
+  container.appendChild(div);
+}
+
+function renumberPrinciples() {
+  document.querySelectorAll('#principlesContainer > div').forEach((div, i) => {
+    const span = div.querySelector('span');
+    if (span) span.textContent = `第${i + 1}条`;
+  });
+}
+
+function initGoals() {
+  const container = document.getElementById('goalsContainer');
+  const data = loadData();
+  const goals = data.goals || [{ text: '', value: '' }];
+  container.innerHTML = '';
+  goals.forEach(g => addGoalRow(g.text, g.value));
+  if (container.children.length === 0) addGoalRow('', '');
+}
+
+function addGoalRow(text = '', val = '') {
+  const container = document.getElementById('goalsContainer');
+  const div = document.createElement('div');
+  div.className = 'goal-row bg-gray-50 rounded-lg p-3 space-y-2';
+  div.innerHTML = `<div class="flex items-center gap-2">
+    <input type="text" class="goal-text flex-1 border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-400" placeholder="例: 月に2冊の本を読む" maxlength="100" aria-label="年次目標">
+    <button class="del-goal-btn text-gray-300 hover:text-red-400 text-lg leading-none" aria-label="削除">×</button>
+  </div>
+  <div class="flex items-center gap-2">
+    <span class="text-xs text-gray-400">↳ 体現する価値観:</span>
+    <input type="text" class="goal-value flex-1 border border-gray-200 rounded-lg px-2 py-1 text-xs focus:outline-none focus:ring-2 focus:ring-indigo-300" placeholder="例: 成長" maxlength="30" aria-label="体現する価値観">
+  </div>`;
+  div.querySelector('.goal-text').value = text;
+  div.querySelector('.goal-value').value = val;
+  div.querySelector('.del-goal-btn').addEventListener('click', () => div.remove());
+  container.appendChild(div);
+}
+
+function renderPreview() {
+  const values = getValues();
+  const principles = getPrinciples();
+  const goals = getGoals();
+  const mission = getMission();
+  const year = new Date().getFullYear();
+
+  const preview = document.getElementById('constitutionPreview');
+
+  const valHtml = values.length > 0
+    ? values.map((v, i) => `<div class="flex items-center gap-2"><span class="w-6 h-6 rounded-full bg-indigo-100 text-indigo-700 text-xs font-bold flex items-center justify-center shrink-0">${escapeHtml(String(i + 1))}</span><span>${escapeHtml(v)}</span></div>`).join('')
+    : '<span class="text-gray-400 text-xs">未入力</span>';
+
+  const prinHtml = principles.length > 0
+    ? `<ol class="space-y-1">${principles.map(p => `<li class="text-sm"><span class="text-gray-400 mr-1">第${escapeHtml(String(p.no))}条</span>${escapeHtml(p.text)}</li>`).join('')}</ol>`
+    : '<span class="text-gray-400 text-xs">未入力</span>';
+
+  const goalHtml = goals.length > 0
+    ? goals.map(g => `<div class="flex items-start gap-2 text-sm"><span class="text-indigo-500 mt-0.5">▸</span><span>${escapeHtml(g.text)}${g.value ? `<span class="ml-2 text-xs text-indigo-400">[${escapeHtml(g.value)}]</span>` : ''}</span></div>`).join('')
+    : '<span class="text-gray-400 text-xs">未入力</span>';
+
+  preview.innerHTML = ` // xss-ok: valHtml/prinHtml/goalHtml all built with escapeHtml on user input
+    <div>
+      <div class="text-xs text-gray-400 uppercase tracking-wide mb-2">ミッションステートメント</div>
+      <p class="text-gray-800 italic border-l-4 border-indigo-300 pl-3">${mission ? escapeHtml(mission) : '<span class="text-gray-400">未入力</span>'}</p>
+    </div>
+    <div>
+      <div class="text-xs text-gray-400 uppercase tracking-wide mb-2">優先価値</div>
+      <div class="flex flex-wrap gap-2">${valHtml}</div>
+    </div>
+    <div>
+      <div class="text-xs text-gray-400 uppercase tracking-wide mb-2">行動原則</div>
+      ${prinHtml}
+    </div>
+    <div>
+      <div class="text-xs text-gray-400 uppercase tracking-wide mb-2">${escapeHtml(String(year))}年 年次目標</div>
+      <div class="space-y-1">${goalHtml}</div>
+    </div>`;
+
+  const md = generateMarkdown(values, principles, goals, mission, year);
+  document.getElementById('exportText').textContent = md;
+}
+
+function generateMarkdown(values, principles, goals, mission, year) {
+  const lines = [];
+  lines.push('# 個人ライフコンスティチューション\n');
+  lines.push('## ミッションステートメント\n');
+  lines.push(mission || '（未入力）');
+  lines.push('\n## 優先価値\n');
+  values.forEach((v, i) => lines.push(`${i + 1}. ${v}`));
+  lines.push('\n## 行動原則\n');
+  principles.forEach(p => lines.push(`**第${p.no}条** ${p.text}`));
+  lines.push(`\n## ${year}年 年次目標\n`);
+  goals.forEach(g => lines.push(`- ${g.text}${g.value ? ` _(${g.value})_` : ''}`));
+  lines.push(`\n---\n_作成日: ${new Date().toLocaleDateString('ja-JP')}_`);
+  return lines.join('\n');
+}
+
+function autosave() {
+  const data = {
+    values: getValues(),
+    principles: getPrinciples(),
+    goals: getGoals(),
+    mission: getMission()
+  };
+  saveData(data);
+}
+
+function switchTab(idx) {
+  if (idx === TABS.indexOf('preview')) {
+    autosave();
+    renderPreview();
+  } else {
+    autosave();
+  }
+  TABS.forEach((t, i) => {
+    document.getElementById('tab-' + t).classList.toggle('hidden', i !== idx);
+  });
+  document.querySelectorAll('.tab-btn').forEach((btn, i) => {
+    btn.className = 'tab-btn px-4 py-2 text-sm font-semibold border-b-2 ' + (i === idx ? 'border-indigo-600 text-indigo-600' : 'border-transparent text-gray-500 hover:text-gray-700');
+  });
+  document.getElementById('prevTabBtn').classList.toggle('hidden', idx === 0);
+  document.getElementById('nextTabBtn').classList.toggle('hidden', idx === TABS.length - 1);
+  currentTab = idx;
+}
+
+document.getElementById('addValueBtn').addEventListener('click', () => addValueRow());
+document.getElementById('addPrincipleBtn').addEventListener('click', () => addPrincipleRow());
+document.getElementById('addGoalBtn').addEventListener('click', () => addGoalRow());
+document.getElementById('nextTabBtn').addEventListener('click', () => switchTab(Math.min(currentTab + 1, TABS.length - 1)));
+document.getElementById('prevTabBtn').addEventListener('click', () => switchTab(Math.max(currentTab - 1, 0)));
+
+document.querySelectorAll('.tab-btn').forEach((btn, i) => {
+  btn.addEventListener('click', () => switchTab(i));
+});
+
+document.getElementById('missionStatement').addEventListener('input', function() {
+  document.getElementById('missionCount').textContent = this.value.length;
+});
+
+document.getElementById('exportBtn').addEventListener('click', function() {
+  const area = document.getElementById('exportArea');
+  area.classList.toggle('hidden');
+});
+
+document.getElementById('copyBtn').addEventListener('click', function() {
+  const text = document.getElementById('exportText').textContent;
+  navigator.clipboard.writeText(text).then(() => {
+    this.textContent = 'コピー済み!';
+    setTimeout(() => { this.textContent = 'コピー'; }, 2000);
+  });
+});
+
+(function init() {
+  const data = loadData();
+  initValues();
+  initPrinciples();
+  initGoals();
+  if (data.mission) {
+    document.getElementById('missionStatement').value = data.mission;
+    document.getElementById('missionCount').textContent = data.mission.length;
+  }
+})();
+</script>
+</body>
+</html>
